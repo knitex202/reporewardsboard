@@ -2,15 +2,624 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=./repo_stream_rewards.html">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>R.E.P.O Stream Rewards Board</title>
-  <link rel="canonical" href="./repo_stream_rewards.html">
+  <style>
+    :root {
+      --bg: #071017;
+      --panel: rgba(10, 21, 31, 0.94);
+      --panel-2: rgba(14, 28, 41, 0.96);
+      --line: rgba(108, 167, 171, 0.24);
+      --text: #f2f7fb;
+      --muted: #9eb6c5;
+      --teal: #64d6cb;
+      --gold: #f2be68;
+      --red: #ef7f72;
+      --green: #86d788;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Bahnschrift, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(58, 133, 126, 0.22), transparent 28%),
+        radial-gradient(circle at right center, rgba(201, 125, 63, 0.14), transparent 24%),
+        linear-gradient(180deg, #071017 0%, #08131d 48%, #060d13 100%);
+    }
+
+    .canvas {
+      width: 1920px;
+      min-height: 1080px;
+      margin: 0 auto;
+      padding: 42px 44px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .canvas::before,
+    .canvas::after {
+      content: "";
+      position: absolute;
+      inset: auto;
+      border-radius: 999px;
+      filter: blur(14px);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .canvas::before {
+      width: 420px;
+      height: 420px;
+      top: -110px;
+      right: -110px;
+      background: radial-gradient(circle, rgba(100, 214, 203, 0.24) 0%, transparent 68%);
+    }
+
+    .canvas::after {
+      width: 380px;
+      height: 380px;
+      left: -120px;
+      bottom: -140px;
+      background: radial-gradient(circle, rgba(242, 190, 104, 0.18) 0%, transparent 72%);
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 24px;
+      margin-bottom: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero,
+    .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 26px 28px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(100, 214, 203, 0.36);
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 50px;
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p,
+    .note p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 18px;
+    }
+
+    .note ul {
+      margin: 16px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .section {
+      position: relative;
+      z-index: 1;
+      margin-top: 20px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding: 0 6px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(12, 28, 40, 0.85);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.items {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid.upgrades {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .grid.monsters {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(11, 23, 34, 0.98), rgba(9, 17, 26, 0.96));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      min-height: 202px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.20);
+    }
+
+    .card-head {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      gap: 16px;
+      padding: 18px 18px 12px;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(22, 41, 55, 0.96), rgba(14, 25, 37, 0.96));
+      border-bottom: 1px solid rgba(108, 167, 171, 0.18);
+    }
+
+    .art {
+      width: 104px;
+      height: 104px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(60, 93, 113, 0.92), rgba(26, 39, 52, 0.92));
+      border: 1px solid rgba(124, 167, 186, 0.34);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .art img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .token {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #f0fbff;
+    }
+
+    .meta h3 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .meta .flavor {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .card-body {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      padding: 16px 18px 18px;
+    }
+
+    .command {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(4, 11, 18, 0.95);
+      border: 1px solid rgba(108, 167, 171, 0.2);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .details {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .cost {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 110px;
+    }
+
+    .cost .label {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .cost .value {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .cost .value span {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+      background: rgba(11, 21, 30, 0.85);
+      border: 1px solid rgba(108, 167, 171, 0.16);
+    }
+
+    .badge.subscriber {
+      color: #ffe4b4;
+      border-color: rgba(242, 190, 104, 0.34);
+      background: rgba(48, 30, 8, 0.68);
+    }
+
+    .footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 0 6px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(10, 22, 31, 0.76);
+    }
+  </style>
 </head>
 <body>
-  <p>
-    Redirecting to
-    <a href="./repo_stream_rewards.html">R.E.P.O Stream Rewards Board</a>.
-  </p>
+  <div class="canvas">
+    <div class="header">
+      <section class="hero">
+        <div class="eyebrow">R.E.P.O Stream Rewards</div>
+        <h1>Viewer Commands</h1>
+        <p>Spend Streamlabs points in chat to buy gear, upgrades, or summon monsters. Commands and costs are pulled from your enabled command list so viewers can see exactly what they can trigger.</p>
+      </section>
+      <aside class="note">
+        <div class="eyebrow">How It Works</div>
+        <p>Type the command in chat exactly as shown. Costs are listed in Streamlabs points.</p>
+        <ul>
+          <li>Most commands are available to everyone.</li>
+          <li><strong>!loom</strong> is subscriber-only in your current setup.</li>
+          <li>Use this as an OBS browser source or as a fullscreen “reward board” scene.</li>
+        </ul>
+      </aside>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Items</h2>
+        <div class="section-tag">Weapons • Tools • Supplies</div>
+      </div>
+      <div class="grid items">
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/photon_blaster.png" alt="Photon Blaster"></div>
+            <div class="meta">
+              <h3>Photon Blaster</h3>
+              <p class="flavor">Precision energy weapon</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!blaster</div>
+              <div class="details">Spawns the laser cannon reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">350<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/cart_cannon.png" alt="C.A.R.T. Cannon"></div>
+            <div class="meta">
+              <h3>C.A.R.T. Cannon</h3>
+              <p class="flavor">Heavy crowd-control option</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!cartcannon</div>
+              <div class="details">Spawns the cart cannon reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">300<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/gun_handgun.png" alt="Handgun"></div>
+            <div class="meta">
+              <h3>Handgun</h3>
+              <p class="flavor">Fast and affordable sidearm</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!handgun</div>
+              <div class="details">Spawns your handgun command reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">200<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/health_large.png" alt="Large Health Pack"></div>
+            <div class="meta">
+              <h3>Large Health Pack</h3>
+              <p class="flavor">Emergency healing drop</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!healthpack</div>
+              <div class="details">Spawns the large health pack reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">150<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/energy_crystal.png" alt="Energy Crystal"></div>
+            <div class="meta">
+              <h3>Energy Crystal</h3>
+              <p class="flavor">Cheap utility power-up</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!power</div>
+              <div class="details">Spawns an energy crystal.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">100<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/gun_shotgun.png" alt="Shotgun"></div>
+            <div class="meta">
+              <h3>Shotgun</h3>
+              <p class="flavor">High-cost heavy firepower</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!shotgun</div>
+              <div class="details">Spawns the shotgun reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">350<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/gun_tranq.png" alt="Tranq Gun"></div>
+            <div class="meta">
+              <h3>Tranq Gun</h3>
+              <p class="flavor">Low-cost control tool</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!tranq</div>
+              <div class="details">Spawns the tranq gun reward.</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">150<span>SC</span></div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Upgrades</h2>
+        <div class="section-tag">Perks • Buffs • Mobility</div>
+      </div>
+      <div class="grid upgrades">
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><div class="token">HP</div></div>
+            <div class="meta"><h3>Health Upgrade</h3><p class="flavor">More survivability for the run</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!health</div><div class="details">Applies the health upgrade reward.</div></div><div class="cost"><div class="label">Cost</div><div class="value">250<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><div class="token">JP</div></div>
+            <div class="meta"><h3>Extra Jump</h3><p class="flavor">Mobility boost for clutch escapes</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!jump</div><div class="details">Applies the extra jump upgrade reward.</div></div><div class="cost"><div class="label">Cost</div><div class="value">250<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><div class="token">RG</div></div>
+            <div class="meta"><h3>Range Upgrade</h3><p class="flavor">Extends grab and interaction reach</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!range</div><div class="details">Applies the range upgrade reward.</div></div><div class="cost"><div class="label">Cost</div><div class="value">250<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><div class="token">SPD</div></div>
+            <div class="meta"><h3>Speed Upgrade</h3><p class="flavor">Sprint faster under pressure</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!speed</div><div class="details">Applies the speed upgrade reward.</div></div><div class="cost"><div class="label">Cost</div><div class="value">250<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><div class="token">STA</div></div>
+            <div class="meta"><h3>Stamina Upgrade</h3><p class="flavor">More endurance for longer runs</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!stamina</div><div class="details">Applies the stamina upgrade reward.</div></div><div class="cost"><div class="label">Cost</div><div class="value">250<span>SC</span></div></div></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Monster Summons</h2>
+        <div class="section-tag">Chaos • Threats • Viewer Mischief</div>
+      </div>
+      <div class="grid monsters">
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="https://static.wikia.nocookie.net/repo-2025horror/images/4/44/Bowtie_Transparent.png/revision/latest?cb=20250612054000" alt="Bowtie"></div>
+            <div class="meta"><h3>Bowtie</h3><p class="flavor">Summon the spinner-style threat</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!bowtie</div><div class="details">Viewer-triggered monster summon.</div></div><div class="cost"><div class="label">Cost</div><div class="value">300<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="https://static.wikia.nocookie.net/repo-2025horror/images/5/55/Cleanup_Crew_Transparent.png/revision/latest?cb=20250612053934" alt="Cleanup Crew"></div>
+            <div class="meta"><h3>Cleanup Crew</h3><p class="flavor">A bomb-throwing nightmare</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!cleanup</div><div class="details">Spawns the cleanup crew monster.</div></div><div class="cost"><div class="label">Cost</div><div class="value">200<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/apex_predator.png" alt="Apex Predator"></div>
+            <div class="meta"><h3>Apex Predator</h3><p class="flavor">The duck command your chat will abuse</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!duck</div><div class="details">Spawns the apex predator monster.</div></div><div class="cost"><div class="label">Cost</div><div class="value">100<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/gambit.png" alt="Gambit"></div>
+            <div class="meta"><h3>Gambit</h3><p class="flavor">Fast pressure and visual chaos</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!gambit</div><div class="details">Spawns the gambit monster.</div></div><div class="cost"><div class="label">Cost</div><div class="value">200<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/loom.png" alt="Loom"></div>
+            <div class="meta"><h3>Loom</h3><p class="flavor">Subscriber-only shadow summon</p></div>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="command">!loom</div>
+              <div class="details">Spawns the loom monster.</div>
+              <div class="badge subscriber">Subscriber Only</div>
+            </div>
+            <div class="cost"><div class="label">Cost</div><div class="value">350<span>SC</span></div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="assets/reaper.png" alt="Reaper"></div>
+            <div class="meta"><h3>Reaper</h3><p class="flavor">High-threat chase monster</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!reaper</div><div class="details">Spawns the reaper monster.</div></div><div class="cost"><div class="label">Cost</div><div class="value">300<span>SC</span></div></div></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <div class="art"><img src="https://static.wikia.nocookie.net/repo-2025horror/images/8/8f/Robe_monster.png/revision/latest?cb=20251201221600" alt="Robe"></div>
+            <div class="meta"><h3>Robe</h3><p class="flavor">Slow, eerie pressure for the lobby</p></div>
+          </div>
+          <div class="card-body"><div><div class="command">!robe</div><div class="details">Spawns the robe monster.</div></div><div class="cost"><div class="label">Cost</div><div class="value">300<span>SC</span></div></div></div>
+        </article>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div class="legend">
+        <span>Use as an OBS browser source</span>
+        <span>1920 × 1080 layout</span>
+        <span>Costs shown in Streamlabs points</span>
+      </div>
+      <div>Built from your enabled commands list on March 9, 2026</div>
+    </div>
+  </div>
 </body>
 </html>
